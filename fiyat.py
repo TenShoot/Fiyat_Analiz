@@ -3778,16 +3778,45 @@ class SketchPriceUI(QWidget):
     def choose_color_preset(self):
         preset_names = list(self.color_presets.keys())
         current_index = preset_names.index(self.current_color_preset) if self.current_color_preset in preset_names else 0
-        selected, ok = QInputDialog.getItem(
-            self,
-            "Renk Paleti",
-            "Sol panel için bir renk paleti seç:",
-            preset_names,
-            current_index,
-            False,
-        )
-        if ok and selected in self.color_presets:
-            self.current_color_preset = selected
+        dlg = QInputDialog(self)
+        dlg.setWindowTitle("Renk Paleti")
+        dlg.setLabelText("Sol panel için bir renk paleti seç:")
+        dlg.setComboBoxItems(preset_names)
+        dlg.setComboBoxEditable(False)
+        dlg.setTextValue(preset_names[current_index])
+        dlg.setStyleSheet("""
+        QDialog { background-color: white; border: 2px solid #444444; color: #111111; }
+        QLabel, QComboBox, QPushButton { color: #111111; background-color: white; }
+        QLabel {
+            font-size: 12pt;
+            font-family: "DIN Alternate", "Noteworthy", "Bradley Hand", "Segoe Print", "Comic Sans MS", sans-serif;
+        }
+        QComboBox {
+            font-size: 11pt;
+            padding: 6px 8px;
+            border: 2px solid #444444;
+            border-radius: 8px;
+            min-height: 26px;
+        }
+        QPushButton {
+            font-size: 11pt;
+            padding: 6px 14px;
+            border: 2px solid #444444;
+            border-radius: 12px;
+        }
+        QPushButton:hover { background-color: #f5f5f5; }
+        """)
+
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            selected = dlg.textValue()
+            if selected in self.color_presets:
+                self.current_color_preset = selected
+                self.update()
+                return
+
+        # stil bütünlüğü için hiçbir seçim yoksa bile ekranı tazele
+        if self.current_color_preset not in self.color_presets:
+            self.current_color_preset = preset_names[0]
             self.update()
 
 
