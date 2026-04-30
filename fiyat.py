@@ -3062,10 +3062,10 @@ class SketchPriceUI(QWidget):
         # Sol panel balon renk paleti ön ayarları
         self.color_presets = {
             "Pastel Mavi-Yeşil": {
-                "material_fill": QColor(221, 238, 245),
-                "labor_fill": QColor(225, 241, 230),
-                "material_price_fill": QColor(236, 246, 251),
-                "labor_price_fill": QColor(236, 248, 240),
+                "material_fill": QColor(202, 231, 247),
+                "labor_fill": QColor(202, 241, 220),
+                "material_price_fill": QColor(224, 242, 251),
+                "labor_price_fill": QColor(225, 248, 233),
             },
             "Pastel Somon-Lila": {
                 "material_fill": QColor(247, 227, 221),
@@ -3074,10 +3074,10 @@ class SketchPriceUI(QWidget):
                 "labor_price_fill": QColor(244, 238, 251),
             },
             "Pastel Bej-Gri": {
-                "material_fill": QColor(242, 235, 224),
-                "labor_fill": QColor(231, 234, 236),
-                "material_price_fill": QColor(248, 243, 234),
-                "labor_price_fill": QColor(240, 243, 245),
+                "material_fill": QColor(232, 218, 196),
+                "labor_fill": QColor(210, 216, 222),
+                "material_price_fill": QColor(242, 233, 219),
+                "labor_price_fill": QColor(226, 232, 237),
             },
         }
         self.current_color_preset = "Pastel Mavi-Yeşil"
@@ -3797,6 +3797,31 @@ class SketchPriceUI(QWidget):
             border: 2px solid #444444;
             border-radius: 8px;
             min-height: 26px;
+            color: #111111;
+            background-color: #ffffff;
+        }
+        QComboBox::drop-down {
+            border: none;
+            width: 26px;
+            background-color: #f2f2f2;
+            border-left: 1px solid #999999;
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+        QComboBox::down-arrow {
+            image: none;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 8px solid #222222;
+            margin-right: 6px;
+        }
+        QComboBox QAbstractItemView {
+            color: #111111;
+            background-color: #ffffff;
+            selection-background-color: #eaf2ff;
+            selection-color: #111111;
+            border: 1px solid #666666;
+            padding: 4px;
         }
         QPushButton {
             font-size: 11pt;
