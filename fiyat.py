@@ -7052,12 +7052,16 @@ class SketchPriceUI(QWidget):
 
             # --- BU SATIR BİLEŞENLERİ KUTUSU (aynı X ve genişlik) ---
             components_top = fire_rect.bottom() + 10
-            components_height = max(180.0, h * 0.16)
+            component_row_count = max(1, len(self.current_components))
+            components_needed_height = 8 + 22 + (component_row_count * 22) + 8
+            components_height = max(180.0, h * 0.16, float(components_needed_height))
             components_list_rect = QRectF(right_col_left, components_top, right_col_width, components_height)
         else:
             self.material_profit_rect = QRectF()
             components_top = h * 0.52
-            components_height = h * 0.24
+            component_row_count = max(1, len(self.current_components))
+            components_needed_height = 8 + 22 + (component_row_count * 22) + 8
+            components_height = max(h * 0.24, float(components_needed_height))
             components_list_rect = QRectF(export_rect.left(), components_top, export_rect.width(), components_height)
 
         # Çerçeveyi çiz
@@ -7114,8 +7118,6 @@ class SketchPriceUI(QWidget):
                 self.component_delete_rects.append({"index": idx, "rect": QRectF(del_rect)})
 
                 y_text += line_h
-                if y_text > components_list_rect.bottom() - line_h:
-                    break
         else:
             painter.drawText(
                 QRectF(inner_left, y_text, inner_width, line_h),
