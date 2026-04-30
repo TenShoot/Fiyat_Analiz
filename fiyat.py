@@ -3057,6 +3057,30 @@ class SketchPriceUI(QWidget):
         self.usd_rate_rect = QRectF()
         self.eur_rate_rect = QRectF()
         self.offer_currency_rect = QRectF()
+        self.palette_rect = QRectF()
+
+        # Sol panel balon renk paleti ön ayarları
+        self.color_presets = {
+            "Pastel Mavi-Yeşil": {
+                "material_fill": QColor(221, 238, 245),
+                "labor_fill": QColor(225, 241, 230),
+                "material_price_fill": QColor(236, 246, 251),
+                "labor_price_fill": QColor(236, 248, 240),
+            },
+            "Pastel Somon-Lila": {
+                "material_fill": QColor(247, 227, 221),
+                "labor_fill": QColor(236, 227, 246),
+                "material_price_fill": QColor(252, 239, 234),
+                "labor_price_fill": QColor(244, 238, 251),
+            },
+            "Pastel Bej-Gri": {
+                "material_fill": QColor(242, 235, 224),
+                "labor_fill": QColor(231, 234, 236),
+                "material_price_fill": QColor(248, 243, 234),
+                "labor_price_fill": QColor(240, 243, 245),
+            },
+        }
+        self.current_color_preset = "Pastel Mavi-Yeşil"
 
         # Sağ panel: kâr ayarları tıklanabilir alanları
         self.material_profit_rect = QRectF()
@@ -3187,7 +3211,7 @@ class SketchPriceUI(QWidget):
     # --------- YARDIMCILAR ---------
 
     def draw_sketch_ellipse(self, painter, rect: QRectF, color: QColor,
-                             fill_alpha=0, pen_width=2, hatch=False):
+                             fill_alpha=0, pen_width=2, hatch=False, fill_override: QColor | None = None):
         """Kalem hissi için jitter'lı elips ve (istersek) iç tarama."""
         # Dış hat kalemi
         pen = QPen(color, pen_width)
@@ -3197,7 +3221,12 @@ class SketchPriceUI(QWidget):
 
         # Hafif şeffaf doldurma (seçili balon için)
         if fill_alpha > 0:
-            brush = QBrush(QColor(color.red(), color.green(), color.blue(), fill_alpha))
+            if fill_override is not None:
+                brush_color = QColor(fill_override)
+                brush_color.setAlpha(fill_alpha)
+            else:
+                brush_color = QColor(color.red(), color.green(), color.blue(), fill_alpha)
+            brush = QBrush(brush_color)
         else:
             brush = Qt.BrushStyle.NoBrush
         painter.setBrush(brush)
@@ -3588,6 +3617,10 @@ class SketchPriceUI(QWidget):
     def mousePressEvent(self, event):
         pos = event.position()
 
+        if self.palette_rect.contains(pos):
+            self.choose_color_preset()
+            return
+
         # Serbest fire hesapla
         if self.free_waste_rect is not None and self.free_waste_rect.contains(pos):
             dlg = SketchFreeWasteDialog(self)
@@ -3741,6 +3774,21 @@ class SketchPriceUI(QWidget):
                 if new_name:
                     self.set_project_name(new_name)
             return
+
+    def choose_color_preset(self):
+        preset_names = list(self.color_presets.keys())
+        current_index = preset_names.index(self.current_color_preset) if self.current_color_preset in preset_names else 0
+        selected, ok = QInputDialog.getItem(
+            self,
+            "Renk Paleti",
+            "Sol panel için bir renk paleti seç:",
+            preset_names,
+            current_index,
+            False,
+        )
+        if ok and selected in self.color_presets:
+            self.current_color_preset = selected
+            self.update()
 
 
 
@@ -6636,6 +6684,27 @@ class SketchPriceUI(QWidget):
         balloon_height = 40
         balloon_spacing = 10
         y_cursor = top_y
+        preset = self.color_presets.get(self.current_color_preset, {})
+        material_fill = preset.get("material_fill", QColor(230, 238, 244))
+        labor_fill = preset.get("labor_fill", QColor(232, 240, 234))
+        material_price_fill = preset.get("material_price_fill", QColor(240, 246, 250))
+        labor_price_fill = preset.get("labor_price_fill", QColor(240, 246, 242))
+
+        self.palette_rect = QRectF(margin + 2, top_y - 52, left_width * 0.62, 20)
+        self.draw_sketch_ellipse(
+            painter,
+            self.palette_rect,
+            QColor(60, 60, 60),
+            fill_alpha=18,
+            pen_width=1,
+        )
+        self.draw_center_text(
+            painter,
+            self.palette_rect,
+            f"Palet: {self.current_color_preset}",
+            QColor(40, 40, 40),
+            8,
+        )
 
         # Malzeme balonları
         for idx, cat in enumerate(self.material_categories):
@@ -6654,9 +6723,10 @@ class SketchPriceUI(QWidget):
                 painter,
                 main_rect,
                 QColor(60, 60, 60),
-                fill_alpha=20 if is_active else 0,
+                fill_alpha=70 if is_active else 45,
                 pen_width=2,
                 hatch=is_active,
+                fill_override=material_fill,
             )
             self.draw_center_text(
                 painter,
@@ -6681,8 +6751,9 @@ class SketchPriceUI(QWidget):
                 painter,
                 mini_rect,
                 QColor(40, 40, 40),
-                fill_alpha=0,
+                fill_alpha=58,
                 pen_width=1,
+                fill_override=material_price_fill,
             )
             self.draw_center_text(
                 painter,
@@ -6751,9 +6822,10 @@ class SketchPriceUI(QWidget):
                 painter,
                 main_rect,
                 QColor(60, 60, 60),
-                fill_alpha=20 if is_active else 0,
+                fill_alpha=70 if is_active else 45,
                 pen_width=2,
                 hatch=is_active,
+                fill_override=labor_fill,
             )
             self.draw_center_text(
                 painter,
@@ -6777,8 +6849,9 @@ class SketchPriceUI(QWidget):
                 painter,
                 mini_rect,
                 QColor(40, 40, 40),
-                fill_alpha=0,
+                fill_alpha=58,
                 pen_width=1,
+                fill_override=labor_price_fill,
             )
             self.draw_center_text(
                 painter,
