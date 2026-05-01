@@ -5544,8 +5544,8 @@ class SketchPriceUI(QWidget):
             printer.setOutputFileName(out_path)
             printer.setPageLayout(QPageLayout(
                 QPageSize(QPageSize.PageSizeId.A4),
-                QPageLayout.Orientation.Landscape,
-                QMarginsF(12, 12, 12, 12),
+                QPageLayout.Orientation.Portrait,
+                QMarginsF(8, 10, 8, 10),
                 QPageLayout.Unit.Millimeter,
             ))
 
@@ -5555,8 +5555,8 @@ class SketchPriceUI(QWidget):
             pdf_started = True
 
             page_rect = printer.pageRect(QPrinter.Unit.DevicePixel)
-            left   = page_rect.left() + 30
-            right  = page_rect.right() - 30
+            left   = page_rect.left() + 18
+            right  = page_rect.right() - 20
             top    = page_rect.top() + 20
             bottom = page_rect.bottom() - 20
             width  = right - left
@@ -5573,12 +5573,13 @@ class SketchPriceUI(QWidget):
             fi = firma_info or {}
 
             y = top
+            page_no = 1
 
             # ── İki sütunlu başlık ──
             # Sol sütun: proje adı + müşteri bilgileri  (63%)
             # Sağ sütun: logo + firma bilgileri         (37%)
-            left_w   = width * 0.62
-            right_x  = left + left_w + 14
+            left_w   = width * 0.56
+            right_x  = left + left_w + 20
             right_w  = right - right_x
             hdr_y0   = top           # başlık bloğunun üst noktası
 
@@ -5691,7 +5692,7 @@ class SketchPriceUI(QWidget):
             HDR_TXT  = QColor(180, 0, 0)
             ROW_ALT  = QColor(245, 245, 245)
             TOTAL_BG = QColor(230, 230, 230)
-            FOOT_H   = (QFontMetricsF(foot_font).height() + 8) * 6 + 20  # alan için rezerv
+            FOOT_H   = (QFontMetricsF(foot_font).height() + 8) * 5 + 10  # alan için rezerv
 
             line_h    = QFontMetricsF(data_font).height()
             min_row_h = line_h + 28
@@ -5775,7 +5776,7 @@ class SketchPriceUI(QWidget):
                 ]
                 rh = calc_rh(vals)
                 if y + rh > bottom - min_row_h * 2 - FOOT_H:
-                    printer.newPage(); y = top
+                    printer.newPage(); y = top; page_no += 1
                 draw_row_s(y, vals, bg, data_font, rh=rh)
                 y += rh
 
@@ -5788,7 +5789,7 @@ class SketchPriceUI(QWidget):
 
             # Toplam satırı
             if y + min_row_h > bottom - FOOT_H:
-                printer.newPage(); y = top
+                printer.newPage(); y = top; page_no += 1
             draw_row_s(y, ["TOPLAM", "", "", "", "", f"{cur_sym} {fmt(grand_total)}"],
                        TOTAL_BG, total_font, QColor(180, 0, 0), rh=min_row_h)
             y += min_row_h
@@ -5823,6 +5824,10 @@ class SketchPriceUI(QWidget):
             for ek in info.get("ek_maddeler", []):
                 if ek:
                     foot_line(f"• {ek}")
+
+            painter.setFont(foot_font)
+            painter.setPen(QColor(110, 110, 110))
+            painter.drawText(QRectF(left, bottom + 4, width, 14), int(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter), f"Sayfa {page_no}")
 
             # ── Yetkili Kaşe / İmza ──
             sign_h = 40
@@ -5913,9 +5918,9 @@ class SketchPriceUI(QWidget):
             printer.setOutputFileName(out_path)
 
             layout_obj = QPageLayout(
-                QPageSize(QPageSize.PageSizeId.A3),
+                QPageSize(QPageSize.PageSizeId.A4),
                 QPageLayout.Orientation.Landscape,
-                QMarginsF(10, 10, 10, 10),
+                QMarginsF(8, 10, 8, 10),
                 QPageLayout.Unit.Millimeter,
             )
             printer.setPageLayout(layout_obj)
@@ -5925,8 +5930,8 @@ class SketchPriceUI(QWidget):
                 return
             pdf_started = True
             page_rect = printer.pageRect(QPrinter.Unit.DevicePixel)
-            left = page_rect.left() + 30
-            right = page_rect.right() - 30
+            left = page_rect.left() + 18
+            right = page_rect.right() - 20
             top = page_rect.top() + 24
             bottom = page_rect.bottom() - 24
             width = right - left
@@ -5943,12 +5948,13 @@ class SketchPriceUI(QWidget):
             fi = firma_info or {}
 
             y = top
+            page_no = 1
 
             # ── İki sütunlu başlık ──
             # Sol sütun (63%): proje adı + müşteri bilgileri
             # Sağ sütun (37%): logo + firma bilgileri
-            left_w  = width * 0.62
-            right_x = left + left_w + 14
+            left_w  = width * 0.56
+            right_x = left + left_w + 20
             right_w = right - right_x
             hdr_y0  = top
 
@@ -6040,7 +6046,7 @@ class SketchPriceUI(QWidget):
             y += 6
 
             table_top = y   # dikey çizgiler bu noktadan başlayacak
-            FOOT_H = (QFontMetricsF(foot_font).height() + 8) * 5 + 20
+            FOOT_H = (QFontMetricsF(foot_font).height() + 8) * 5 + 10
 
             # Sütun genişlikleri (toplam = width)
             # Ürün Adı | Detay | Mik | Bir | Malzeme | İşçilik | Top.Maliyet | Karlı Top. | Birim Fiyat
@@ -6113,9 +6119,10 @@ class SketchPriceUI(QWidget):
                 return rh
 
             def new_page():
-                nonlocal y
+                nonlocal y, page_no
                 printer.newPage()
                 y = top
+                page_no += 1
 
             # Başlık satırı — çok satırlı başlıklar için 2 kat yükseklik
             hdr_h = min_row_h * 2
@@ -6223,6 +6230,10 @@ class SketchPriceUI(QWidget):
             for ek in info.get("ek_maddeler", []):
                 if ek:
                     foot_line(f"• {ek}")
+
+            painter.setFont(foot_font)
+            painter.setPen(QColor(110, 110, 110))
+            painter.drawText(QRectF(left, bottom + 4, width, 14), int(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter), f"Sayfa {page_no}")
 
             # ── Yetkili Kaşe / İmza ──
             sign_h = 40
